@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Run</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="js/sprites.js"></script>
+    <script src="js/update.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/trash.js"></script>
+    <script src="js/heart.js"></script>
+    <script src="js/generator.js"></script>
+    <script src="js/collisions.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+    $('#playerStats').nextAll().remove();
+
+        var game;
+        window.onload = function () {
+            
+        }
+
+        function StartGame(){
+            game = new Game();
+            game.run();
+            game.start();
+            $("#splashScreen").hide();
+            $("#gameCanvas").show();
+            $("#playerStats").show();
+        }
+
+        function PauseGame() {
+            game.pause();
+            $("#pauseDiv").toggle();
+            $("#questionDiv").hide();
+        }
+
+        function ShowQuestion() {
+
+            $("#correctAnswer").hide();
+            $("#incorrectAnswer").hide();
+
+            game.question();
+
+            if(game.getState() == 5){
+                GenerateQuestion();
+                if(currQuestion == -1) {
+                    game.question();
+                    game.pause();
+                    return;
+                }
+            }
+
+            $("#q" + currQuestion).toggle();
+            $("#questionDiv").toggle();
+        }
+
+        var quests = [1,2,3,4,5];
+        var currQuestion;
+        function GenerateQuestion(){
+            if(quests.length == 0){
+                GameCompleted();
+                currQuestion = -1;
+            }
+            else{
+                var r = (Math.random() * 10) % quests.length;
+                currQuestion = quests[parseInt(r)];
+                quests.splice(parseInt(r), 1);
+            }
+        }
+
+        function GameCompleted(){
+            $("#gameCompletedDiv").slideToggle("fast");
+        }
+
+        function CheckAnswer(answer){
+            console.log(answer);
+            if(answer){
+                console.log("correct");
+                ShowCorrectImage();
+            }
+            else{
+                console.log("incorrect");
+                ShowIncorrectImage();
+            }
+        }
+
+        function ShowCorrectImage(){
+            $("#correctAnswer").slideToggle("fast");
+        }
+
+        function ShowIncorrectImage(){
+            $("#incorrectAnswer").slideToggle("fast");
+        }
+
+        function UpdatePlayerDamage(fill) {
+            if (typeof fill !== 'undefined') $("#playerDamageCover").width(0);
+            else $("#playerDamageCover").width($("#playerDamageCover").width() + 140 / 10);
+            if ($("#playerDamageCover").width() > 112) {
+                $("#gameOverDiv").show();
+                game.pause();
+            }
+        }
+
+        function UpdatePlayerScore(score) {
+            $("#playerScore").text(parseInt(score));
+        }
+
+        function ReloadPage() {
+            location.reload();
+        }
+    </script>
+</head>
+
+<body>
+    <img src="images/pageBackground.jpg" id="bg" alt="">
+
+    <div class="mainDiv">
+
+        <div id="splashScreen">
+            <img src="images/splashImage.jpg" />
+            <div id="startGameButton" onclick="StartGame()">Начало</div>
+        </div>
+        <canvas id="gameCanvas" width="800px" height="500px"></canvas>
+
+        <div id="pauseDiv">Пауза</div>
+        <div id="gameOverDiv">
+            <div>
+                <span>Край на играта</span><br />
+                <img src="images/reload.png" style="width: 80px; cursor: pointer;" onclick="ReloadPage()" />
+            </div>
+        </div>
+        <div id="gameCompletedDiv">
+            <div>
+                <span>Браво! Достигнахте финала!</span><br />
+                <img src="images/reload.png" style="width: 80px; cursor: pointer;" onclick="ReloadPage()" />
+            </div>
+        </div>
+
+        <div id="questionDiv">
+            <div><img src="images/whiteboard.png" style="width: 700px;height: 450px;margin-top: 50px;" /></div>
+            <div id="askDiv">
+
+                <div id="questions">
+                    <div id="q1">
+                        Видимостта при силен дъжд, снеговалеж, прах, дим или мъгла вечер на здрачаване и сутрин при развиделяване, е:      
+                        <div>          
+                            <div onclick="CheckAnswer(1)" class="questionButton" style="margin-left: 150px;">Намалена</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Скъсена</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Ограничена</div>
+                            <div style="clear:both;"></div>
+                        </div>
+                    </div>
+                    <div id="q2">
+                        Видимостта при движение по път със завои и стеснени участъци, със стръмни изкачвания и спускания е:    
+                        <div>          
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Намалена</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Скъсена</div>
+                            <div onclick="CheckAnswer(1)" class="questionButton" style="margin-left: 150px;">Ограничена</div>
+                            <div style="clear:both;"></div>
+                        </div>
+                    </div>
+                    <div id="q3">
+                        Забранено ли е на пешеходците да пресичат платното за движение при ограничена видимост?
+                        <div>          
+                            <div onclick="CheckAnswer(1)" class="questionButton" style="margin-left: 150px;">Да</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Не</div>
+                            <div style="clear:both;"></div>
+                        </div>
+                    </div>
+                    <div id="q4">
+                        Облекло с какъв цвят ще направи пешеходците, при пресичане, видими по-рано в светлината на фаровете?   
+                        <div>          
+                            <div onclick="CheckAnswer(1)" class="questionButton" style="margin-left: 150px;">Със светъл</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">С тъмен</div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;">Без значение</div>
+                            <div style="clear:both;"></div>
+                        </div>
+                    </div>
+                    <div id="q5">
+                        Всеки велосипед, за да може да участва в движението, трябва да има:     
+                        <div>          
+                            <div onclick="CheckAnswer(1)" class="questionButton" style="margin-left: 150px;line-height: 20px;height: 80px;">
+                                Отпред фар с бяла или жълта светлина и червен светлоотразител отзад
+                            </div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;line-height: 20px;height: 55px;">
+                                Само отпред фар с бяла или жълта светлина
+                            </div>
+                            <div onclick="CheckAnswer(0)" class="questionButton" style="margin-left: 150px;line-height: 20px;height: 55px;">
+                                Само червен светлоотразител отзад
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+
+
+                <div id="correctAnswer">
+                    <img src="images/correct.png" style="width: 100px;" />
+                    <div onclick="ShowQuestion()" class="questionButton" style="margin-left: 100px;float:none;background-color: #009cff;width: 100px;">
+                        Напред
+                    </div>
+                </div>
+                <div id="incorrectAnswer">
+                    <img src="images/incorrect.png" style="width: 100px;" />
+                    <div onclick="ShowQuestion()" class="questionButton" style="margin-left: 100px;float:none;background-color: #009cff;width: 100px;">
+                        Напред
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="playerStats">
+            <div id="playerScoreCircle">
+                <img src="images/points.png" />
+            </div>
+            <div id="playerScore">0</div>
+
+            <div id="pauseGame" onclick="PauseGame()"><img src="images/pause.png" class="pauseImage" id="pauseGameImage" /></div>
+            <div id="playerDamageContainer">
+                <div id="playerDamage"></div>
+                <div id=playerDamageCover></div>
+            </div>
+            <div id="playerLives"><img src="images/heart.png" width="30px" /></div>
+        </div>
+   </div>    
+</body>
+</html>
